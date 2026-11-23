@@ -207,8 +207,7 @@ footer a{color:#d7dcea;margin:0 8px}
 .barra .cta{flex:1;font-size:16px;padding:14px 10px;border-radius:14px}
 @media (min-width:700px){.hero h1{font-size:46px}.carrossel figure{flex-basis:30%}.pagine figure{flex-basis:34%}.barra{justify-content:center}.barra .cta{flex:0 0 340px}}
 @media (max-width:370px){.hero h1{font-size:33px}h2{font-size:27px}.stack{height:290px}}
-.sp-toast{display:none;position:fixed;left:16px;bottom:calc(16px + env(safe-area-inset-bottom));z-index:19;background:#fff;border-radius:12px;box-shadow:0 4px 24px rgba(31,45,92,.16);padding:12px 32px 12px 14px;max-width:280px;width:calc(100% - 32px);border-left:4px solid var(--verde)}
-.barra.on ~ .sp-toast{bottom:calc(96px + env(safe-area-inset-bottom))}
+.sp-toast{display:none;position:fixed;left:16px;bottom:calc(16px + env(safe-area-inset-bottom));z-index:25;background:#fff;border-radius:12px;box-shadow:0 4px 24px rgba(31,45,92,.16);padding:12px 32px 12px 14px;max-width:280px;width:calc(100% - 32px);border-left:4px solid var(--verde)}
 .sp-toast.on{display:block;animation:spSlide .4s ease}
 @keyframes spSlide{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
 @media (prefers-reduced-motion:reduce){.sp-toast.on{animation:none}}
@@ -512,6 +511,23 @@ footer a{color:#d7dcea;margin:0 8px}
     ultimo = coda.shift();
     return ultimo;
   }
+  function posiziona() {
+    toast.style.bottom = "calc(16px + env(safe-area-inset-bottom, 0px))";
+    if (!toast.classList.contains("on")) return;
+    var gap = 16, rToast = toast.getBoundingClientRect(), lift = 0;
+    var bar = document.querySelector(".barra");
+    if (bar && bar.classList.contains("on")) {
+      var br = bar.getBoundingClientRect();
+      lift = Math.max(lift, Math.round(rToast.bottom - br.top + gap));
+    }
+    document.querySelectorAll("a.cta, .preco").forEach(function (el) {
+      if (bar && bar.contains(el)) return;
+      var r = el.getBoundingClientRect(), vh = window.innerHeight;
+      if (r.width && r.top < vh && r.bottom > vh * 0.55)
+        lift = Math.max(lift, Math.round(rToast.bottom - r.top + gap));
+    });
+    if (lift > 0) toast.style.bottom = "calc(" + (16 + lift) + "px + env(safe-area-inset-bottom, 0px))";
+  }
   function nascondi() { toast.classList.remove("on"); }
   function mostra() {
     if (chiuso) return;
@@ -520,9 +536,12 @@ footer a{color:#d7dcea;margin:0 8px}
     toast.classList.remove("on");
     void toast.offsetWidth;
     toast.classList.add("on");
+    posiziona();
     clearTimeout(hideT);
     hideT = setTimeout(nascondi, 5000);
   }
+  addEventListener("scroll", function () { if (toast.classList.contains("on")) posiziona(); }, { passive: true });
+  addEventListener("resize", function () { if (toast.classList.contains("on")) posiziona(); });
   function pianifica() {
     if (chiuso) return;
     var ms = 15000 + Math.floor(Math.random() * 10001);
