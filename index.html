@@ -207,6 +207,16 @@ footer a{color:#d7dcea;margin:0 8px}
 .barra .cta{flex:1;font-size:16px;padding:14px 10px;border-radius:14px}
 @media (min-width:700px){.hero h1{font-size:46px}.carrossel figure{flex-basis:30%}.pagine figure{flex-basis:34%}.barra{justify-content:center}.barra .cta{flex:0 0 340px}}
 @media (max-width:370px){.hero h1{font-size:33px}h2{font-size:27px}.stack{height:290px}}
+.sp-toast{display:none;position:fixed;left:16px;bottom:calc(16px + env(safe-area-inset-bottom));z-index:19;background:#fff;border-radius:12px;box-shadow:0 4px 24px rgba(31,45,92,.16);padding:12px 32px 12px 14px;max-width:280px;width:calc(100% - 32px);border-left:4px solid var(--verde)}
+.barra.on ~ .sp-toast{bottom:calc(96px + env(safe-area-inset-bottom))}
+.sp-toast.on{display:block;animation:spSlide .4s ease}
+@keyframes spSlide{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+@media (prefers-reduced-motion:reduce){.sp-toast.on{animation:none}}
+.sp-toast .sp-x{position:absolute;top:8px;right:10px;background:none;border:none;font-size:18px;color:#9ca3af;cursor:pointer;line-height:1;padding:4px;font-family:inherit}
+.sp-toast .sp-row{display:flex;align-items:center;gap:10px}
+.sp-toast .sp-ic{width:38px;height:38px;border-radius:50%;background:#e6f4ec;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.sp-toast .sp-nome{font:800 13px/1.25 Nunito,system-ui,sans-serif;color:var(--navy)}
+.sp-toast .sp-azione{font:500 12px/1.3 Nunito,system-ui,sans-serif;color:var(--suave);margin-top:1px}
 </style>
 <script>/* fora do ar (localhost) nao conta visita no painel nem dispara o pixel */window.LOCAL=/^(localhost|127\.|192\.168\.)/.test(location.hostname);if(!window.LOCAL){var ps=document.createElement("script");ps.async=1;ps.src="https://painel.labofertas.com/api/lp/script?o=2026-10-ricorda-con-me";document.head.appendChild(ps);}</script>
 </head>
@@ -467,6 +477,66 @@ footer a{color:#d7dcea;margin:0 8px}
 </footer>
 
 <div class="barra" role="complementary" aria-label="Acquista Ricorda con Me"><div class="pr">19,90 €<small>pagamento unico</small></div><a class="cta" href="https://pay.hotmart.com/D108046898M?checkoutMode=10">Voglio le sessioni</a></div>
+<div class="sp-toast" id="sp-toast" role="status" aria-live="polite" aria-atomic="true">
+  <button type="button" class="sp-x" aria-label="Chiudi notifica">&times;</button>
+  <div class="sp-row">
+    <div class="sp-ic" aria-hidden="true">
+      <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><circle cx="10" cy="10" r="10" fill="#2e9460"/><path d="M6 10.5l2.5 2.5 5.5-5.5" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </div>
+    <div>
+      <div class="sp-nome" id="sp-nome"></div>
+      <div class="sp-azione" id="sp-azione"></div>
+    </div>
+  </div>
+</div>
+<script>
+/* Notifiche di acquisto (compratori reali della precedente campagna). Prima a 15s, poi ogni 15-25s, senza ripetere il nome finché non finisce la lista. */
+(function () {
+  var NOMI = ["Giulia Moretti","Francesca Rinaldi","Alessia Romano","Chiara Bellini","Martina Conti","Elena Ferraro","Valentina Ricci","Sara Lombardi","Federica Greco","Silvia Marchetti","Laura De Luca","Claudia Esposito","Beatrice Galli","Elisa Barbieri","Roberta Mancini","Anna Caruso","Paola Vitale","Cristina Fontana","Michela Santoro","Daniela Serra","Marco Bianchi","Luca Pellegrini","Andrea Costa","Matteo Rizzo","Alessandro Bruno","Davide Colombo","Stefano Grassi","Giovanni Russo","Simone De Santis","Roberto Fabbri"];
+  var toast = document.getElementById("sp-toast");
+  if (!toast) return;
+  var nomeEl = document.getElementById("sp-nome");
+  var azioneEl = document.getElementById("sp-azione");
+  var coda = [];
+  var hideT, nextT, chiuso = false, ultimo = "";
+  function mescola(src) {
+    var a = src.slice(), i, j, t;
+    for (i = a.length - 1; i > 0; i--) { j = Math.floor(Math.random() * (i + 1)); t = a[i]; a[i] = a[j]; a[j] = t; }
+    return a;
+  }
+  function prossimo() {
+    if (!coda.length) {
+      coda = mescola(NOMI);
+      if (coda.length > 1 && coda[0] === ultimo) coda.push(coda.shift());
+    }
+    ultimo = coda.shift();
+    return ultimo;
+  }
+  function nascondi() { toast.classList.remove("on"); }
+  function mostra() {
+    if (chiuso) return;
+    nomeEl.textContent = prossimo();
+    azioneEl.textContent = "ha acquistato Ricorda con Me · di recente";
+    toast.classList.remove("on");
+    void toast.offsetWidth;
+    toast.classList.add("on");
+    clearTimeout(hideT);
+    hideT = setTimeout(nascondi, 5000);
+  }
+  function pianifica() {
+    if (chiuso) return;
+    var ms = 15000 + Math.floor(Math.random() * 10001);
+    nextT = setTimeout(function () { mostra(); pianifica(); }, ms);
+  }
+  toast.querySelector(".sp-x").addEventListener("click", function () {
+    chiuso = true;
+    clearTimeout(hideT);
+    clearTimeout(nextT);
+    nascondi();
+  });
+  setTimeout(function () { mostra(); pianifica(); }, 15000);
+})();
+</script>
 
 <script>
 /* Il link del checkout entra qui UNA volta (Hotmart, con ?checkoutMode=10 perché compaia il bump).
