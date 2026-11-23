@@ -102,11 +102,14 @@ h1.tit{font:700 26px/1.15 Fredoka,Nunito,sans-serif;color:var(--escuro);margin:1
 </ul>
 <p class="emais">Ogni attività ha <b>cosa ti serve</b>, <b>i passi</b>, <b>le frasi pronte da dire</b> e <b>cosa evitare</b>. In più la scheda «Cosa funziona con…» da compilare per ogni ospite.</p>
 <div class="acao" data-acao>
-<!-- HOTMART: qui entra il widget del Funil de Vendas (compra con un clic). Finché il prodotto non esiste, il bottone resta senza link. -->
+<!-- HOTMART - Sales Funnel Widget (funil 294890): compra com 1 clique, so aparece depois de uma compra -->
+<div id="hotmart-sales-funnel" data-fluxo hidden></div>
+<div id="reserva">
 <a class="bt" data-checkout="https://pay.hotmart.com/T108622098B" href="https://pay.hotmart.com/T108622098B" data-clique><b>Sì, aggiungo Gli ospiti difficili</b><span>Solo <em>19,90 €</em>, una volta sola</span></a>
 <p class="pq">Pagamento unico. Resta nella tua area acquisti della Hotmart, insieme al kit.</p>
 <a class="nao" data-fluxo hidden href="https://app.ricordaconme.online/acesso/kit-Fyxf4CF7.html">No, grazie: vado al mio accesso</a>
 <a class="nao" data-fora hidden href="index.html">‹ Scopri Ricorda con Me</a>
+</div>
 </div>
 <p class="pq rod"><a href="termini.html">Termini</a> · <a href="privacy.html">Privacy</a></p>
 </main>
@@ -129,5 +132,18 @@ if (/[?&]pos=1/.test(location.search)) document.querySelectorAll("[data-fluxo]")
 else document.querySelectorAll("[data-fora]").forEach(function (e) { e.hidden = false; });
 
 
+</script>
+<script src="https://checkout.hotmart.com/lib/hotmart-checkout-elements.js"></script>
+<script>
+/* Depois da compra (?pos=1 ou query da Hotmart): mostra o widget de 1 clique e esconde a reserva.
+   Se o widget nao montar em 6 s, a reserva (checkout normal e "No, grazie") volta, para ninguem ficar sem saida. */
+(function(){
+  var pos = /[?&]pos=1/.test(location.search) || /[?&](xcod|transaction|hottok|off|sck)=/i.test(location.search);
+  if (!pos) return;
+  var w = document.getElementById("hotmart-sales-funnel"), r = document.getElementById("reserva");
+  w.hidden = false; r.hidden = true;
+  try { checkoutElements.init("salesFunnel").mount("#hotmart-sales-funnel"); } catch (e) {}
+  setTimeout(function(){ if (!w.querySelector("iframe") && !w.children.length) { r.hidden = false; } }, 6000);
+})();
 </script>
 </body></html>
