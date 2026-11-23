@@ -543,10 +543,15 @@ s.was{text-decoration:line-through;color:#8b93a3;font-weight:800;font-style:norm
     ultimo = coda.shift();
     return ultimo;
   }
+  function abbrevia(nome) {
+    var p = String(nome || "").trim().split(/\s+/);
+    if (p.length < 2) return nome;
+    return p[0] + " " + p[1].charAt(0).toUpperCase() + ".";
+  }
   function nascondi() { toast.classList.remove("on"); toast.style.bottom = ""; }
   function mostra() {
     if (chiuso) return;
-    nomeEl.textContent = prossimo();
+    nomeEl.textContent = abbrevia(prossimo());
     azioneEl.textContent = "ha acquistato Ricorda con Me · di recente";
     toast.classList.remove("on");
     void toast.offsetWidth;
